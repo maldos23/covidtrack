@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#8e2de2" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="this application follows the updates of the virus from official sources on the covid"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -24,7 +24,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Covid Track</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -39,5 +39,16 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script type="text/javascript">
+      if ('serviceWorker' in navigator) {
+         console.log("Will the service worker register?");
+         navigator.serviceWorker.register('service-worker.js')
+           .then(function(reg){
+             console.log("Yes, it did.");
+          }).catch(function(err) {
+             console.log("No it didn't. This happened:", err)
+         });
+      }
+    </script>
   </body>
 </html>
