@@ -113,6 +113,11 @@ StyledTreeItem.propTypes = {
         defaultCollapseIcon={<ArrowDropDown />}
         defaultExpandIcon={<ArrowRight />}
         defaultEndIcon={<div style={{ width: 24 }} />}>
+        <Typography 
+        color="textSecondary"
+        style={{textAlign:"center"}}>
+        Select an option
+        </Typography>
         <StyledTreeItem 
         onClick={()=>props.handleValue(0)} 
         nodeId="1" 

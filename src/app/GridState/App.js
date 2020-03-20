@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import MenuBar from '../../components/MenuBar/index';
 import Chart from '../../components/Charts/index';
-import { Grid, makeStyles, Typography, Card, CardContent, Hidden, CardHeader } from '@material-ui/core';
+import { Grid, makeStyles, Typography, Card, CardContent, Hidden, CardHeader, Dialog, DialogTitle, DialogActions, Button, DialogContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, ListSubheader } from '@material-ui/core';
 import MaterialTable  from 'material-table';
-import { SearchRounded, ClearRounded, FirstPageRounded, CheckRounded, RemoveRounded, LastPageRounded, ChevronRightRounded, ChevronLeftRounded, ArrowUpwardRounded } from '@material-ui/icons';
+import { SearchRounded, ClearRounded, FirstPageRounded, CheckRounded, RemoveRounded, LastPageRounded, ChevronRightRounded, ChevronLeftRounded, ArrowUpwardRounded, SaveAltRounded } from '@material-ui/icons';
 
 const useStyle = makeStyles(theme => ({
     margin:{
@@ -19,40 +19,16 @@ const useStyle = makeStyles(theme => ({
     tableTitle:{
         background:"linear-gradient(to right, #8e2de2, #4a00e0)",
         borderBottomLeftRadius:"25px",
+    },
+    dialogTitle:{
+        background:"linear-gradient(to right, #8e2de2, #4a00e0)", 
+        color:"#FFF"
     }
 }));
 
 function Main(props){
     const classes = useStyle();
-    const {data} = props;
     const [selection, setSelection] = useState(0);
-
-    return(
-        <div className={classes.root}>
-            <Grid container>
-                <Grid item xs={12} sm={3} md={2}>
-                    <Hidden xsDown>
-                    <div style={{
-                        height:"100px"
-                    }}/>
-                    </Hidden>
-                    <div>
-                    <MenuBar handleValue={(value) => setSelection(value)} countries={data.length} />
-                    </div>
-                </Grid>
-                <Grid item xs={12} sm={9} md={10}>
-                    <div className={classes.margin}>
-                    {selection === 0 && <AllDataDashboard data={data} isLoading={props.isLoading}/>}
-                    {selection === 1 && <TableCountries data={data} isLoading={props.isLoading}/>}
-                    </div>
-                </Grid>
-            </Grid>
-        </div>
-    )
-}
-
-function AllDataDashboard(props){
-
     const [data, setData] = useState([]);
 
     async function CreateDash(params){
@@ -84,6 +60,34 @@ function AllDataDashboard(props){
             CreateDash(props.data);
         }
     },[props.data]);
+
+    return(
+        <div className={classes.root}>
+            <Grid container>
+                <Grid item xs={12} sm={3} md={2}>
+                    <Hidden xsDown>
+                    <div style={{
+                        height:"100px"
+                    }}/>
+                    </Hidden>
+                    <div>
+                    <MenuBar handleValue={(value) => setSelection(value)} countries={data.length} />
+                    </div>
+                </Grid>
+                <Grid item xs={12} sm={9} md={10}>
+                    <div className={classes.margin}>
+                    {selection === 0 && <AllDataDashboard data={data} isLoading={props.isLoading}/>}
+                    {selection === 1 && <TableCountries total={data} data={props.data} isLoading={props.isLoading}/>}
+                    </div>
+                </Grid>
+            </Grid>
+        </div>
+    )
+}
+
+function AllDataDashboard(props){
+
+    const {data} = props;
 
     return(
         <Grid container spacing={2}>
@@ -129,8 +133,21 @@ function AllDataDashboard(props){
 }
 
 function TableCountries(props){
+    const [open, setOpen] = useState(false);
+    const [preview, setPreview] = useState({});
     const classes = useStyle();
+    const squemaTable = [
+        {field:"country", title:"Country"},
+        {field:"cases", title:"Cases"},
+        {field:"todayCases", title:"Today Cases"},
+        {field:"deaths", title:"Deaths"},
+        {field:"todayDeaths", title:"Today Deaths"},
+        {field:"recovered", title:"Recovered"},
+        {field:"critical", title:"Critical"},
+    ];
+
     return(
+        <div>
         <MaterialTable
         isLoading={props.isLoading}
         title={
@@ -152,15 +169,7 @@ function TableCountries(props){
         ),
         }}
         data={props.data}
-        columns={[
-            {field:"country", title:"Country"},
-            {field:"cases", title:"Cases"},
-            {field:"todayCases", title:"Today Cases"},
-            {field:"deaths", title:"Deaths"},
-            {field:"todayDeaths", title:"Today Deaths"},
-            {field:"recovered", title:"Recovered"},
-            {field:"critical", title:"Critical"},
-        ]}
+        columns={squemaTable}
         icons={{
             Search:SearchRounded,
             Clear:ClearRounded,
@@ -172,14 +181,80 @@ function TableCountries(props){
             NextPage:ChevronRightRounded,
             PreviousPage:ChevronLeftRounded,
             ResetSearch:ClearRounded,
-            SortArrow:ArrowUpwardRounded
+            SortArrow:ArrowUpwardRounded,
+            Export:SaveAltRounded
+        }}
+        onRowClick={async(e, content) => {
+            await setPreview(content);
+            await setOpen(true);
         }}
         options={{
+            exportFileName:"CovidReport",
+            exportAllData:true,
+            exportButton:true,
             maxBodyHeight:"calc(100vh - 220px)",
             pageSize:50,
             pageSizeOptions:[50]
         }}
         />
+        <Dialog
+        fullWidth
+        maxWidth="sm"
+        onClose={() => setOpen(false)}
+        open={open}>
+            <DialogTitle className={classes.dialogTitle}>
+                Global comparison of cases
+            </DialogTitle>
+            <DialogContent>
+            <List>
+                <ListSubheader 
+                style={{
+                    background:"#FFF",
+                    fontSize:"18px"
+                }}>
+                    {`${preview.country} vs World`}
+                </ListSubheader>
+                {
+                    squemaTable.map(function(item,index){
+                        if(typeof preview[item.field] === "number"){
+                            return(
+                                <ListItem key={index}>
+                                    <ListItemAvatar>
+                                    <Avatar 
+                                    style={{
+                                        fontWeight:"bold",
+                                        fontSize:"14px",
+                                        background:"#8e2de2",
+                                        width:50,
+                                        height:50,
+                                        marginRight:"5px"
+                                    }}>
+                                        {`${parseFloat((preview[item.field]/props.total.Cases)*100).toFixed(1)}%`}
+                                    </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText
+                                    primaryTypographyProps={{
+                                        color:"secondary",
+                                        style:{
+                                            fontWeight:"bold"
+                                        }
+                                    }}
+                                    primary={item.title} 
+                                    secondary={preview[item.field]}/>
+                                </ListItem>
+                            )
+                        }
+                    })
+                }
+            </List>
+            </DialogContent>
+            <DialogActions>
+                <Button color="secondary" onClick={() => setOpen(false)}>
+                    Close
+                </Button>
+            </DialogActions>
+        </Dialog>
+        </div>
     )
 }
 
