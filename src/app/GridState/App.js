@@ -229,7 +229,7 @@ function TableCountries(props){
                                         height:50,
                                         marginRight:"5px"
                                     }}>
-                                        {`${parseFloat((preview[item.field]/props.total.Cases)*100).toFixed(1)}%`}
+                                        {`${parseFloat((preview[item.field]/props.total[item.title])*100).toFixed(1)}%`}
                                     </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText
